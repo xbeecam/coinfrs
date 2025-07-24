@@ -113,11 +113,14 @@ Security is a paramount concern. The following principles and technologies will 
 ```
 /api/v1/
 ├── /auth/
-│   ├── POST   /register
-│   ├── POST   /login
+│   ├── POST   /register              (deprecated)
+│   ├── POST   /login                 (deprecated)
 │   ├── POST   /refresh
 │   ├── POST   /logout
-│   └── POST   /oauth/google
+│   ├── GET    /oauth/google
+│   ├── POST   /oauth/google/callback
+│   ├── POST   /otp/request
+│   └── POST   /otp/verify
 ├── /users/
 │   ├── GET    /me
 │   └── PUT    /me

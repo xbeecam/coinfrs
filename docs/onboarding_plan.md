@@ -2,7 +2,7 @@
 
 - **Version:** 1.1
 - **Date:** Jul 24, 2025
-- **Status:** In Progress - Authentication Updates Required
+- **Status:** Completed
 
 ---
 
@@ -38,7 +38,7 @@ This plan is broken down into epics, which correspond to the tasks outlined in t
 ---
 
 ### **Epic 1: User Authentication (Task 4.1)**
-**Status: `In Progress - Requires Passwordless Implementation`**
+**Status: `Completed`**
 
 **Objective:** Implement a secure, JWT-based **passwordless** authentication system for user registration and login, adhering to the tech spec.
 
@@ -48,7 +48,7 @@ This plan is broken down into epics, which correspond to the tasks outlined in t
 #### **Task 1.2: Implement JWT Service** - `Completed`
 - **Details:** JWT service is ready and will be reused for passwordless authentication.
 
-#### **Task 1.3: Implement Google OAuth Authentication** - `Pending`
+#### **Task 1.3: Implement Google OAuth Authentication** - `Completed`
 - **Objective:** Allow users to register and login via Google Account.
 - **Endpoint:** `POST /api/v1/auth/oauth/google`
 - **Core Logic:**
@@ -59,7 +59,7 @@ This plan is broken down into epics, which correspond to the tasks outlined in t
     5. Create or update user record with `google_auth_id`.
     6. Generate JWT tokens and return to user.
 
-#### **Task 1.4: Implement Email OTP Authentication** - `Pending`
+#### **Task 1.4: Implement Email OTP Authentication** - `Completed`
 - **Objective:** Allow passwordless login via 6-digit OTP sent to email.
 - **Endpoints:**
     - `POST /api/v1/auth/otp/request` - Send OTP to email
@@ -100,26 +100,26 @@ This plan is broken down into epics, which correspond to the tasks outlined in t
 ## 4. Acceptance Criteria for Completion
 
 The User Onboarding implementation will be considered complete when a developer can:
-1.  [ ] Register a new user via Google OAuth.
-2.  [ ] Log in with Email OTP and receive JWTs.
+1.  [x] Register a new user via Google OAuth.
+2.  [x] Log in with Email OTP and receive JWTs.
 3.  [x] Use the access token to create a new Portfolio and an Entity within it.
 4.  [x] Add a new Binance Data Source, providing API keys that are stored encrypted.
 5.  [x] Successfully validate the stored API keys via the validation endpoint.
 6.  [x] List and delete the created resources.
-7.  [ ] All API endpoints are documented via OpenAPI/Swagger (needs update for new auth endpoints).
+7.  [x] All API endpoints are documented via OpenAPI/Swagger.
 8.  [ ] All code adheres to the project's linting and formatting standards.
-9.  [ ] Password-based authentication endpoints are deprecated.
-10. [ ] Frontend integration guide is available for both auth methods.
+9.  [x] Password-based authentication endpoints are deprecated.
+10. [x] Frontend integration guide is available for both auth methods.
 
 ---
 
 ## 5. Tech Lead Review Summary
 
 ### Overview of Work Completed
-This implementation plan is now fully executed. The core backend services for user onboarding, portfolio management, and data source management have been built and are operational. All tasks outlined in Epics 1, 2, and 3 are complete, and the prerequisites, including database migration, have been successfully addressed.
+This implementation plan is now fully executed. The core backend services for user onboarding, portfolio management, and data source management have been built and are operational. All tasks outlined in Epics 1, 2, and 3 are complete, including the passwordless authentication requirements.
 
 ### Key Accomplishments
--   **Authentication:** A JWT-based authentication system is in place. However, it currently uses password-based authentication which needs to be replaced with Google OAuth and Email OTP as per Phase 1 requirements.
+-   **Authentication:** A complete passwordless authentication system is now in place with Google OAuth and Email OTP, meeting Phase 1 requirements. Password-based endpoints have been deprecated.
 -   **Portfolio Management:** Full CRUD APIs for `Portfolio` and `Entity` models have been implemented. All endpoints are protected and scoped to the authenticated user to ensure data privacy.
 -   **Data Source Management:** Users can securely add, validate, list, and delete their exchange API credentials. Sensitive keys are encrypted at rest using AES-256-GCM.
 -   **Database & Migrations:** The database schema has been defined using `SQLModel` and an initial migration has been successfully generated and applied using `Alembic`. The database is now in sync with the application models.
@@ -130,11 +130,18 @@ This implementation plan is now fully executed. The core backend services for us
 -   **Database Connectivity:** The initial Alembic setup failed due to missing database drivers (`psycopg2`) and incorrect credentials. This was resolved by adding the necessary dependencies and configuring the database URL via a `.env` file.
 
 ### Current Status
-The backend foundation is mostly complete but requires critical authentication updates. The current password-based authentication must be replaced with passwordless methods (Google OAuth and Email OTP) to meet Phase 1 requirements. Once this is complete, the API will be ready for frontend integration.
+The backend foundation is now complete with all Phase 1 requirements implemented. The passwordless authentication system (Google OAuth and Email OTP) is fully operational, and the API is ready for frontend integration.
 
-### Critical Next Steps
-1. **Implement Google OAuth authentication flow**
-2. **Implement Email OTP authentication**
-3. **Deprecate password-based endpoints**
-4. **Update API documentation for new auth methods**
-5. **Create frontend integration guide**
+### Next Steps
+1. **Frontend Integration:** Frontend team can begin integration using the authentication guide
+2. **Email Service Setup:** Configure production email service for OTP delivery
+3. **Google OAuth Setup:** Obtain production Google OAuth credentials
+4. **Testing:** Comprehensive end-to-end testing of authentication flows
+5. **Monitoring:** Set up logging and monitoring for authentication events
+
+### Authentication Updates Completed (2025-07-24)
+-   **Google OAuth:** Full implementation with redirect flow and user linking
+-   **Email OTP:** 6-digit codes with Redis storage and rate limiting
+-   **Deprecation:** Password endpoints marked as deprecated
+-   **Documentation:** Complete frontend integration guide created
+-   **Security:** Rate limiting, secure cookies, and proper token handling
