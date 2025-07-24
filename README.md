@@ -86,8 +86,8 @@ Coinfrs is a B2B SaaS platform that provides automated accounting and reporting 
 ### Setup
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/coinfrs_v2.git
-cd coinfrs_v2
+git clone https://github.com/your-org/coinfrs.git
+cd coinfrs
 
 # Set up Python environment
 python -m venv venv
@@ -131,7 +131,7 @@ For detailed setup instructions, see [Development Setup Guide](docs/development_
 ## Project Structure
 
 ```
-coinfrs_v2/
+coinfrs/
 ├── backend/              # Backend application
 │   ├── app/             # Application code
 │   │   ├── api/         # API endpoints
