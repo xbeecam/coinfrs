@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+celery
+redis
+cryptography
+requests
+passlib[bcrypt]
+python-jose[cryptography]
+alembic
+psycopg2-binary
+python-dotenv
+authlib
+httpx
+email-validator
+python-multipart
