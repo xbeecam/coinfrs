@@ -19,7 +19,7 @@ This guide will help you set up your development environment for the Coinfrs pro
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-org/coinfrs_v2.git
+git clone https://github.com/your-org/coinfrs.git
 cd coinfrs_v2
 ```
 
