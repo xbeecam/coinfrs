@@ -19,7 +19,7 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 from sqlmodel import SQLModel
-from app.models import canonical, onboarding, staging
+from app.models import canonical, onboarding, staging, binance_reconciliation
 
 target_metadata = SQLModel.metadata
 
