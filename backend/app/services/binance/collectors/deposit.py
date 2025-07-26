@@ -15,7 +15,7 @@ from app.models.binance_reconciliation import (
 class DepositCollector(BaseCollector):
     """Collector for deposit history"""
     
-    async def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Collect deposit history for the specified date range.
         
@@ -36,7 +36,7 @@ class DepositCollector(BaseCollector):
             }
             
             # Fetch deposits using pagination
-            deposits = await self._fetch_deposits(start_date, end_date)
+            deposits = self._fetch_deposits(start_date, end_date)
             results["deposits_collected"] = len(deposits)
             
             # Process each deposit
@@ -82,7 +82,7 @@ class DepositCollector(BaseCollector):
         finally:
             self.close_db(db)
     
-    async def _fetch_deposits(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    def _fetch_deposits(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch deposit history from Binance API with pagination"""
         all_deposits = []
         
@@ -161,6 +161,9 @@ class DepositCollector(BaseCollector):
     
     def _save_transfer(self, db, transfer: Dict[str, Any]):
         """Save transfer to reconciliation table"""
+        if db is None:
+            return
+            
         # Check if transfer already exists
         existing = db.query(BinanceReconciliationTransfer).filter_by(
             source=transfer["source"],

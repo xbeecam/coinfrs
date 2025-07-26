@@ -135,8 +135,11 @@ class BinanceAPIClient:
             params["timestamp"] = self._get_timestamp()
             params["signature"] = self._sign_request(params)
 
+        # Apply rate limiting synchronously (blocking)
+        time.sleep(weight * 0.02)  # Simple delay based on weight
+        
         try:
-            response = self.session.request(method, url, params=params)
+            response = self.session.request(method, url, params=params, timeout=30)
             
             # Check for API errors in response
             if response.status_code != 200:
@@ -293,7 +296,8 @@ class BinanceAPIClient:
         """
         params = {
             "type": account_type,
-            "limit": limit
+            "limit": limit,
+            "recvWindow": 60000  # 60 seconds to handle time sync issues
         }
         if start_time:
             params["startTime"] = start_time

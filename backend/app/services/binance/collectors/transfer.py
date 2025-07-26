@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from .base import BaseCollector
-from app.services.binance.client import BinanceAPIError
+from app.services.binance.client import BinanceAPIError, BinanceErrorType
 from app.models.binance_reconciliation import (
     BinanceReconciliationTransfer, 
     TransactionType, 
@@ -15,7 +15,7 @@ from app.models.binance_reconciliation import (
 class TransferCollector(BaseCollector):
     """Collector for all types of transfers between accounts and wallets"""
     
-    async def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Collect all transfer types for the specified date range.
         
@@ -43,7 +43,7 @@ class TransferCollector(BaseCollector):
             csv_data = []
             
             # 1. Collect transfers between main account and trading accounts
-            main_transfers = await self._fetch_main_transfers(start_date, end_date)
+            main_transfers = self._fetch_main_transfers(start_date, end_date)
             results["transfer_types"]["main_spot"] = len(main_transfers)
             results["transfers_collected"] += len(main_transfers)
             
@@ -57,7 +57,7 @@ class TransferCollector(BaseCollector):
             
             # 2. Collect sub-account transfers (if master account)
             if self.account_type == "main":
-                sub_transfers = await self._fetch_sub_transfers(start_date, end_date)
+                sub_transfers = self._fetch_sub_transfers(start_date, end_date)
                 results["transfer_types"]["sub_account"] = len(sub_transfers)
                 results["transfers_collected"] += len(sub_transfers)
                 
@@ -70,7 +70,7 @@ class TransferCollector(BaseCollector):
                         csv_data.append(self._transfer_to_csv_row(processed))
             
             # 3. Collect universal wallet transfers
-            wallet_transfers = await self._fetch_wallet_transfers(start_date, end_date)
+            wallet_transfers = self._fetch_wallet_transfers(start_date, end_date)
             results["transfer_types"]["wallet_to_wallet"] = len(wallet_transfers)
             results["transfers_collected"] += len(wallet_transfers)
             
@@ -97,7 +97,7 @@ class TransferCollector(BaseCollector):
         finally:
             self.close_db(db)
     
-    async def _fetch_main_transfers(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    def _fetch_main_transfers(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch transfers between main and trading accounts"""
         transfers = []
         
@@ -123,7 +123,7 @@ class TransferCollector(BaseCollector):
             
         return transfers
     
-    async def _fetch_sub_transfers(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    def _fetch_sub_transfers(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch sub-account transfers"""
         transfers = []
         
@@ -147,7 +147,7 @@ class TransferCollector(BaseCollector):
             
         return transfers
     
-    async def _fetch_wallet_transfers(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    def _fetch_wallet_transfers(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch universal wallet transfers"""
         transfers = []
         
@@ -292,6 +292,9 @@ class TransferCollector(BaseCollector):
     
     def _save_transfer(self, db, transfer: Dict[str, Any]):
         """Save transfer to reconciliation table"""
+        if db is None:
+            return
+            
         # Check if transfer already exists
         existing = db.query(BinanceReconciliationTransfer).filter_by(
             source=transfer["source"],

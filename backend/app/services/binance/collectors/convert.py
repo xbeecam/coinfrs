@@ -15,7 +15,7 @@ from app.models.binance_reconciliation import (
 class ConvertCollector(BaseCollector):
     """Collector for convert transactions"""
     
-    async def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Collect convert transactions for the specified date range.
         
@@ -36,7 +36,7 @@ class ConvertCollector(BaseCollector):
             }
             
             # Fetch convert history
-            converts = await self._fetch_converts(start_date, end_date)
+            converts = self._fetch_converts(start_date, end_date)
             results["converts_collected"] = len(converts)
             
             # Process each convert
@@ -78,7 +78,7 @@ class ConvertCollector(BaseCollector):
         finally:
             self.close_db(db)
     
-    async def _fetch_converts(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    def _fetch_converts(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch convert history from Binance API"""
         converts = []
         
@@ -152,6 +152,9 @@ class ConvertCollector(BaseCollector):
     
     def _save_trade(self, db, trade: Dict[str, Any]):
         """Save trade to reconciliation table"""
+        if db is None:
+            return
+            
         # Check if trade already exists
         existing = db.query(BinanceReconciliationTrade).filter_by(
             source=trade["source"],

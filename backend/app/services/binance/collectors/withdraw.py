@@ -15,7 +15,7 @@ from app.models.binance_reconciliation import (
 class WithdrawCollector(BaseCollector):
     """Collector for withdrawal history"""
     
-    async def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Collect withdrawal history for the specified date range.
         
@@ -37,7 +37,7 @@ class WithdrawCollector(BaseCollector):
             }
             
             # Fetch withdrawals using pagination
-            withdrawals = await self._fetch_withdrawals(start_date, end_date)
+            withdrawals = self._fetch_withdrawals(start_date, end_date)
             results["withdrawals_collected"] = len(withdrawals)
             
             # Process each withdrawal
@@ -87,7 +87,7 @@ class WithdrawCollector(BaseCollector):
         finally:
             self.close_db(db)
     
-    async def _fetch_withdrawals(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    def _fetch_withdrawals(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch withdrawal history from Binance API with pagination"""
         all_withdrawals = []
         
@@ -195,6 +195,9 @@ class WithdrawCollector(BaseCollector):
     
     def _save_transfer(self, db, transfer: Dict[str, Any]):
         """Save transfer to reconciliation table"""
+        if db is None:
+            return
+            
         # Check if transfer already exists
         existing = db.query(BinanceReconciliationTransfer).filter_by(
             source=transfer["source"],

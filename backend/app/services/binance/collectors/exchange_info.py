@@ -9,7 +9,7 @@ from app.models.binance_reconciliation import BinanceExchangeInfo
 class ExchangeInfoCollector(BaseCollector):
     """Collector for exchange info (trading pairs and symbols)"""
     
-    async def collect(self, start_date: datetime = None, end_date: datetime = None) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Collect current exchange info. Date parameters are ignored as this is always current data.
         
@@ -27,7 +27,7 @@ class ExchangeInfoCollector(BaseCollector):
             }
             
             # Fetch exchange info
-            exchange_info = await self._fetch_exchange_info()
+            exchange_info = self._fetch_exchange_info()
             
             if exchange_info:
                 symbols = exchange_info.get("symbols", [])
@@ -36,8 +36,8 @@ class ExchangeInfoCollector(BaseCollector):
                 # Process each symbol
                 csv_data = []
                 for symbol_info in symbols:
-                    # Only process SPOT trading symbols
-                    if symbol_info.get("status") == "TRADING" and "SPOT" in symbol_info.get("permissions", []):
+                    # Only process TRADING symbols (permissions field may be empty)
+                    if symbol_info.get("status") == "TRADING":
                         results["spot_symbols"] += 1
                         
                         # Save or update symbol
@@ -68,7 +68,7 @@ class ExchangeInfoCollector(BaseCollector):
         finally:
             self.close_db(db)
     
-    async def _fetch_exchange_info(self) -> Dict[str, Any]:
+    def _fetch_exchange_info(self) -> Dict[str, Any]:
         """Fetch exchange info from Binance API"""
         try:
             return self.client.get_exchange_info()
@@ -79,6 +79,9 @@ class ExchangeInfoCollector(BaseCollector):
     
     def _save_symbol(self, db, symbol_info: Dict[str, Any]):
         """Save or update symbol in exchange info table"""
+        if db is None:
+            return
+            
         symbol = symbol_info.get("symbol", "")
         
         # Check if symbol already exists

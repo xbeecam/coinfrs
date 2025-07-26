@@ -1,0 +1,30 @@
+{
+  "Exchange Info": {
+    "success": false,
+    "error": "collect() got an unexpected keyword argument 'dry_run'"
+  },
+  "Snapshot": {
+    "success": false,
+    "error": "collect() got an unexpected keyword argument 'dry_run'"
+  },
+  "Deposits": {
+    "success": false,
+    "error": "collect() got an unexpected keyword argument 'dry_run'"
+  },
+  "Withdrawals": {
+    "success": false,
+    "error": "collect() got an unexpected keyword argument 'dry_run'"
+  },
+  "Transfers": {
+    "success": false,
+    "error": "collect() got an unexpected keyword argument 'dry_run'"
+  },
+  "Trades": {
+    "success": false,
+    "error": "collect() got an unexpected keyword argument 'dry_run'"
+  },
+  "Converts": {
+    "success": false,
+    "error": "collect() got an unexpected keyword argument 'dry_run'"
+  }
+}

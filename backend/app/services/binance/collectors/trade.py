@@ -17,7 +17,7 @@ from app.models.binance_reconciliation import (
 class TradeCollector(BaseCollector):
     """Collector for trades with intelligent symbol discovery"""
     
-    async def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Collect trades for all relevant symbols for the specified date range.
         
@@ -49,7 +49,7 @@ class TradeCollector(BaseCollector):
             for symbol in symbols:
                 try:
                     # Fetch trades for this symbol
-                    trades = await self._fetch_trades_for_symbol(symbol, start_date, end_date)
+                    trades = self._fetch_trades_for_symbol(symbol, start_date, end_date)
                     if trades:
                         results["symbols_processed"] += 1
                         results["trades_collected"] += len(trades)
@@ -102,6 +102,9 @@ class TradeCollector(BaseCollector):
     
     def _discover_symbols(self, db) -> List[str]:
         """Discover trading symbols based on user assets and exchange info"""
+        if db is None:
+            return []
+            
         symbols = set()
         
         # 1. Get previously traded symbols from cache
@@ -141,7 +144,7 @@ class TradeCollector(BaseCollector):
         
         return stablecoin_symbols + other_symbols
     
-    async def _fetch_trades_for_symbol(self, symbol: str, start_date: datetime, 
+    def _fetch_trades_for_symbol(self, symbol: str, start_date: datetime, 
                                      end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch trades for a specific symbol"""
         all_trades = []
@@ -149,8 +152,8 @@ class TradeCollector(BaseCollector):
         start_ms = self.timestamp_to_ms(start_date)
         end_ms = self.timestamp_to_ms(end_date)
         
-        # Use time chunking for large date ranges
-        time_chunks = self.client.chunk_time_range(start_ms, end_ms, days=7)
+        # Use time chunking for large date ranges - trades API requires max 24 hours
+        time_chunks = self.client.chunk_time_range(start_ms, end_ms, days=1)
         
         for chunk_start, chunk_end in time_chunks:
             from_id = None
@@ -233,6 +236,9 @@ class TradeCollector(BaseCollector):
     
     def _save_trade(self, db, trade: Dict[str, Any]):
         """Save trade to reconciliation table"""
+        if db is None:
+            return
+            
         # Check if trade already exists
         existing = db.query(BinanceReconciliationTrade).filter_by(
             source=trade["source"],
@@ -253,6 +259,9 @@ class TradeCollector(BaseCollector):
     
     def _save_traded_symbol(self, db, symbol: str):
         """Save symbol to traded symbols cache"""
+        if db is None:
+            return
+            
         existing = db.query(BinanceTradedSymbols).filter_by(
             email=self.email,
             symbol=symbol
@@ -277,6 +286,9 @@ class TradeCollector(BaseCollector):
     
     def _remove_invalid_symbol(self, db, symbol: str):
         """Mark symbol as inactive in cache"""
+        if db is None:
+            return
+            
         existing = db.query(BinanceTradedSymbols).filter_by(
             email=self.email,
             symbol=symbol

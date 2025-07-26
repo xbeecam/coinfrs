@@ -1,6 +1,5 @@
 from typing import Dict, Any, List
 from datetime import datetime, timedelta
-import asyncio
 from decimal import Decimal
 
 from .base import BaseCollector
@@ -11,7 +10,7 @@ from app.models.binance_reconciliation import BinanceReconciliationBalance, Wall
 class SnapshotCollector(BaseCollector):
     """Collector for daily account balance snapshots"""
     
-    async def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Collect daily balance snapshots for the specified date range.
         
@@ -32,7 +31,7 @@ class SnapshotCollector(BaseCollector):
             }
             
             # Get snapshots for date range
-            snapshots = await self._fetch_snapshots(start_date, end_date)
+            snapshots = self._fetch_snapshots(start_date, end_date)
             results["snapshots_collected"] = len(snapshots)
             
             # Process each snapshot
@@ -74,21 +73,23 @@ class SnapshotCollector(BaseCollector):
         finally:
             self.close_db(db)
     
-    async def _fetch_snapshots(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    def _fetch_snapshots(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
         """Fetch account snapshots from Binance API"""
         snapshots = []
         
-        # Binance snapshots are daily, so we need to fetch for each day
-        current_date = start_date
-        while current_date <= end_date:
+        # Account types to fetch - all accounts can have SPOT, MARGIN, and FUTURES
+        account_types = ["SPOT", "MARGIN", "FUTURES"]
+        
+        for account_type in account_types:
             try:
-                # Convert to milliseconds
-                start_ms = self.timestamp_to_ms(current_date)
-                end_ms = self.timestamp_to_ms(current_date + timedelta(days=1) - timedelta(microseconds=1))
+                # Binance snapshot API returns last 30 days max
+                # Default is 7 days if no time range specified
+                start_ms = self.timestamp_to_ms(start_date)
+                end_ms = self.timestamp_to_ms(end_date)
                 
-                # Fetch snapshot for this day
+                # Fetch snapshots for this account type
                 response = self.client.get_account_snapshot(
-                    account_type="SPOT",
+                    account_type=account_type,
                     start_time=start_ms,
                     end_time=end_ms,
                     limit=30  # Max days per request
@@ -96,21 +97,19 @@ class SnapshotCollector(BaseCollector):
                 
                 if response.get("code") == 200 and "snapshotVos" in response:
                     for snapshot in response["snapshotVos"]:
+                        # Add account type to snapshot data
+                        snapshot["_account_type"] = account_type
                         snapshots.append(snapshot)
                         
             except BinanceAPIError as e:
-                if self.handle_api_error(e):
-                    # Retry this date
-                    continue
-                else:
-                    # Skip this date
-                    self.log_error("snapshot_fetch_error", str(e), {
-                        "date": current_date.strftime('%Y-%m-%d')
-                    })
+                # Log error and continue with next account type
+                self.log_error("snapshot_fetch_error", str(e), {
+                    "account_type": account_type,
+                    "start_date": start_date.strftime('%Y-%m-%d'),
+                    "end_date": end_date.strftime('%Y-%m-%d'),
+                    "error_type": e.error_type.value if hasattr(e, 'error_type') else 'unknown'
+                })
                     
-            # Move to next day
-            current_date += timedelta(days=1)
-            
         return snapshots
     
     def _process_snapshot(self, snapshot: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -141,7 +140,7 @@ class SnapshotCollector(BaseCollector):
                     "external_id": f"{self.email}_{snapshot_date}_{asset}",
                     "date": snapshot_date,
                     "email": self.email,
-                    "wallet": WalletType.SPOT.value,
+                    "wallet": self._get_wallet_type(snapshot.get("_account_type", "SPOT")),
                     "asset": asset,
                     "raw_balance": total_balance,
                     "raw_loan": Decimal("0"),
@@ -162,6 +161,9 @@ class SnapshotCollector(BaseCollector):
     
     def _save_balance(self, db, balance: Dict[str, Any]):
         """Save balance to reconciliation table"""
+        if db is None:
+            return
+            
         # Check if balance already exists
         existing = db.query(BinanceReconciliationBalance).filter_by(
             email=balance["email"],
@@ -181,6 +183,15 @@ class SnapshotCollector(BaseCollector):
             db.add(new_balance)
             
         db.commit()
+    
+    def _get_wallet_type(self, account_type: str) -> str:
+        """Map account type to wallet type"""
+        mapping = {
+            "SPOT": WalletType.SPOT.value,
+            "MARGIN": WalletType.MARGIN.value,
+            "FUTURES": WalletType.FUTURES.value
+        }
+        return mapping.get(account_type, WalletType.SPOT.value)
     
     def validate_data(self, data: Any) -> bool:
         """
