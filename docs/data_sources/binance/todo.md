@@ -26,14 +26,14 @@ Date: 2025-07-26
 15. [x] Add get_transfer_between_wallets() endpoint method
 
 ### Phase 4: Data Collectors
-16. [ ] Create base.py with BaseCollector abstract class
-17. [ ] Implement snapshot.py for daily balance snapshots
-18. [ ] Implement deposit.py for deposit history
-19. [ ] Implement withdraw.py for withdrawal history
-20. [ ] Implement transfer.py for all transfer types
-21. [ ] Implement trade.py with intelligent symbol discovery
-22. [ ] Implement convert.py for convert transactions
-23. [ ] Implement exchange_info.py for daily updates
+16. [x] Create base.py with BaseCollector abstract class
+17. [x] Implement snapshot.py for daily balance snapshots
+18. [x] Implement deposit.py for deposit history
+19. [x] Implement withdraw.py for withdrawal history
+20. [x] Implement transfer.py for all transfer types
+21. [x] Implement trade.py with intelligent symbol discovery
+22. [x] Implement convert.py for convert transactions
+23. [x] Implement exchange_info.py for daily updates
 
 ### Phase 5: Data Processing
 24. [ ] Create canonical.py processor with pandas
@@ -86,6 +86,22 @@ Date: 2025-07-26
     - get_transfer_between_accounts_sub() for sub-account transfers
     - get_transfer_between_wallets() for universal transfers
   - Enhanced error handling with proper categorization of Binance error codes
+- Step 16-23: Phase 4 completed successfully:
+  - Created BaseCollector abstract class with common functionality:
+    - UTC date range handling (T+2 processing)
+    - Raw data storage for audit trail
+    - CSV export for verification
+    - Error handling and logging
+  - Implemented all data collectors:
+    - SnapshotCollector: Daily balance snapshots with UTC timestamps
+    - DepositCollector: Deposit history (only successful deposits)
+    - WithdrawCollector: Withdrawals + fees as separate transactions
+    - TransferCollector: All transfer types (main, sub, wallet-to-wallet)
+    - TradeCollector: Intelligent symbol discovery using v_binance_user_assets
+    - ConvertCollector: Convert transactions as buy/sell pairs
+    - ExchangeInfoCollector: Daily symbol updates
+  - All collectors save raw data to audit tables and processed data to reconciliation tables
+  - CSV export functionality for verification against Binance UI
 
 ## Key Decisions
 - Use database view instead of materialized view for real-time accuracy
