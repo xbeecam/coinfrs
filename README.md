@@ -44,10 +44,10 @@ Coinfrs is a B2B SaaS platform that provides automated accounting and reporting 
            │                           │
            ▼                           ▼
 ┌─────────────────────────────────────────────────┐
-│              FastAPI Application                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────┐ │
-│  │   Auth API  │  │Portfolio API│  │Data API │ │
-│  └─────────────┘  └─────────────┘  └─────────┘ │
+│              FastAPI Application                │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────┐  │
+│  │   Auth API  │  │Portfolio API│  │Data API │  │
+│  └─────────────┘  └─────────────┘  └─────────┘  │
 └─────────────────────────┬───────────────────────┘
                           │
            ┌──────────────┴──────────────┐
@@ -66,7 +66,7 @@ Coinfrs is a B2B SaaS platform that provides automated accounting and reporting 
            │                             │
            ▼                             ▼
 ┌─────────────────────────────────────────────────┐
-│              PostgreSQL Database                 │
+│              PostgreSQL Database                │
 │  ┌─────────────┐           ┌─────────────────┐  │
 │  │   Staging   │           │    Canonical    │  │
 │  │    Layer    │ ──ETL──>  │     Layer       │  │
