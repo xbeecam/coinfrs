@@ -363,3 +363,29 @@ class BinanceAPIClient:
             
         url = f"{self.BASE_SAPI_URL}/asset/transfer/universal"
         return self._make_request("GET", url, params=params, signed=True)
+    
+    def get_sub_account_list(self, email: Optional[str] = None, is_freeze: Optional[bool] = None, 
+                           page: int = 1, limit: int = 200) -> Dict[str, Any]:
+        """
+        Get sub-account list (for master accounts only).
+        
+        Args:
+            email: Sub-account email (optional, for filtering)
+            is_freeze: Filter by freeze status (optional)
+            page: Page number (default: 1)
+            limit: Number of records per page (max: 200, default: 200)
+            
+        Returns:
+            Dictionary containing sub-account list and pagination info
+            
+        Raises:
+            BinanceAPIError: If not a master account or other API errors
+        """
+        params = {"page": page, "limit": limit}
+        if email:
+            params["email"] = email
+        if is_freeze is not None:
+            params["isFreeze"] = is_freeze
+            
+        url = f"{self.BASE_SAPI_URL}/sub-account/list"
+        return self._make_request("GET", url, params=params, signed=True, weight=10)

@@ -71,9 +71,14 @@ target/
 
 # Environments
 .env
+.env.local
+.env.*.local
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Test results (may contain sensitive data)
+tests/integration/binance/results/
